@@ -42,26 +42,8 @@ El sistema sigue un ciclo de detección y respuesta automatizado:
 *   **SIEM/XDR:** Wazuh
 *   **IDS/NIDS:** Suricata
 *   **Automatización (SOAR):** Ansible 
-*   **Análisis de IA (Posible Ampliación):** Script en Python para el análisis contextual de alertas.
-
-## 🚀 Cómo Empezar
-
-1.  Clona este repositorio.
-2.  Despliega las máquinas virtuales según la topología de red descrita.
-3.  Sigue los guiones de instalación y configuración de cada herramienta (Wazuh, Suricata, Ansible).
-4.  Ejecuta los playbooks de Ansible para preparar las máquinas.
-5.  Lanza un ataque desde la máquina Kali y observa el ciclo de detección y respuesta automatizado.
-
-## 📚 Estructura del Proyecto
-├── ansible/ # Playbooks de Ansible para automatización
-│ ├── bloquear_ip.yml # Playbook para bloquear IPs maliciosas
-│ └── inventory # Archivo de inventario de Ansible
-├── wazuh/ # Configuraciones de Wazuh
-│ └── ossec.conf # Archivo de configuración del manager
-├── suricata/ # Configuraciones de Suricata
-│ └── suricata.yaml # Archivo de configuración principal
-└── docs/ # Documentación del proyecto
-└── incidentes.md # Análisis de incidentes simulados
-
+*   **Análisis de IA (Posible Ampliación):** Script usando Ollama
+![IA](https://imgs.search.brave.com/WFjGh3i6JIJJT67quVheCiIh_vOau3dV6bPJwtT6UfE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdmdz/dGFjay5jb20vbWVk/aWEvaW1nL29sbGFt/YS1haS1sb2dvLUhh/TjUxNjUyMTcud2Vi/cA)
+    
 ## 📄 Licencia
 Este proyecto se ha desarrollado como parte de un trabajo académico sobre ciberseguridad.
