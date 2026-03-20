@@ -1,0 +1,1371 @@
+# Conversation: Pues menos mal que te he preguntando. Yo no quiero hacer esto: Idea: "SOC Orquestado por IA: Diseño 
+
+***31/12/2025, 23:17:55 - User:***
+
+Pues menos mal que te he preguntando. Yo no quiero hacer esto: Idea: "SOC Orquestado por IA: Diseño e Implementación de un Sistema de Detección y Respuesta a Incidentes Autónomo"
+
+Seguridad (SOC) autónomo, capaz de detectar, analizar, contener y reportar amenazas de ciberseguridad de forma automática. La solución integra herramientas de seguridad de código abierto (Suricata, Wazuh), frameworks de automatización (Ansible) y un modelo de Inteligencia Artificial local (Ollama) para orquestar una respuesta a incidentes sin intervención humana. El objetivo es demostrar la viabilidad de un enfoque proactivo y automatizado para la defensa de redes, aplicando conceptos de vanguardia como AIOps y SOAR (Security Orchestration, Automation, and Response) en un entorno de laboratorio controlado
+El Flujo de Trabajo Será el Siguiente:
+
+Detección: Un sistema de seguridad detecta una actividad sospechosa en la red.
+Centralización: La alerta se envía a una plataforma central de logs (SIEM).
+Análisis con IA: Un asistente de IA analiza la alerta, el contexto y los logs asociados para determinar si es una amenaza real y qué tipo de ataque es.
+Orquestación y Respuesta Automática: Si la IA confirma la amenaza, activa un playbook de automatización (Ansible) que toma medidas inmediatas para bloquear al atacante.
+Notificación Inteligente: El sistema genera un informe detallado del incidente y lo envía a un canal de RocketChat para que los humanos puedan supervisarlo.
+yo quiero hacer esto otro relacionado con lo de arriba: 
+He estado dándole otra vuelta y me he dado cuenta de que mi propuesta inicial quizá estaba demasiado por encima del nivel del ciclo.
+Creo que puedo enfocarla de forma más acorde: un laboratorio de seguridad en red con detección de intrusiones, centralización de logs y automatización básica de respuestas.
+La parte de IA sería solo de apoyo para análisis y generación de informes.
+Si lo ves mejor así, lo adapto sin problema.
+Perdón por molestar. 
+Y mejor dicho:
+Sí, igual el uso de IA y la orquestación de respuestas mediante playbook de Ansible es bastante, pero si lo haces todo sería muy chulo la verdad.
+Entonces hasta ddónde quieres llegar?
+Un saludo
+No quiero que si añado la IA haga el sistema autónomo quiero que haga que lo te acabo de decir
+Primero el proyecto, luego la IA y que luego sea facil añadirla y no tenga que en vez de avanzar tenga que retroceder 
+
+ESTO QUE TE ESTOY PONIENDO FORMO PARTE DE OTRO CHAT QUE TE HICE EN OTRA UCNETA, LO UNICI QUEU QUUIERO ESQ ME AYUDES A REALIZAR ESTE TRABAJO PASO A PASO 
+
+---
+
+***31/12/2025, 23:17:58 - Venice:***
+
+
+Entendido perfectamente. No te preocupes, es una decisión muy inteligente y profesional la que has tomado. Modularizar el proyecto es la clave del éxito. Construir una base sólida y luego añadir capas de complejidad es mucho más realista, educativo y te evitará los quebraderos de cabeza que mencionas.
+
+Vamos a estructurar esto paso a paso, tal como has pedido. El plan es: primero, el núcleo del laboratorio de seguridad (el SOC básico). Una vez que eso funcione como un reloj, te guiaré para integrar la IA como una capa de "inteligencia asistida", no como un cerebro autónomo.
+
+Aquí tienes el plan de ataque, dividido en fases claras.
+
+---
+
+### **Fase 1: El Corazón del Laboratorio - Detección y Centralización**
+
+El objetivo aquí es simple: tener un sistema que detecte cosas malas y te las muestre en un solo sitio. Sin automatización, sin IA. Solo visibilidad.
+
+**Paso 1.1: Preparar el Entorno de Laboratorio**
+Necesitas un pequeño ecosistema donde simular el tráfico normal y el malicioso. La forma más fácil es con virtualización.
+*   **Herramienta recomendada:** VirtualBox o VMware Workstation.
+*   **Máquinas virtuales necesarias:**
+    *   **Atacante:** Kali Linux. Desde aquí lanzarás los ataques para probar el sistema.
+    *   **Victima:** Una máquina con un servidor web vulnerable, como Ubuntu Server con Apache o DVWA (Damn Vulnerable Web Application).
+    *   **Sensor/IDS:** Una máquina donde instalaremos **Suricata**. Esta máquina "escuchará" todo el tráfico de red.
+
+**Paso 1.2: Instalar y Configurar Suricata (El Ojos del Sistema)**
+Suricata es un sistema de detección de intrusiones en red (NIDS/IDS).
+1.  **Instalación:** En tu máquina "Sensor", instala Suricata. (`sudo apt-get install suricata`).
+2.  **Configuración de la Interfaz:** Edita el archivo `suricata.yaml` y configúralo para que escuche en la interfaz de red en "modo promiscuo". Esto es clave para que vea todo el tráfico que no va dirigido a él.
+3.  **Reglas:** Suricata funciona con reglas. Descarga un conjunto de reglas público, como las de Emerging Threats (`etpro`). Estas reglas le dicen a Suricata qué buscar (ej: "si ves un paquete con esta firma, es un escaneo de puertos").
+4.  **Prueba:** Desde la máquina Kali, lanza un escaneo de puertos simple con Nmap a la máquina "Victima" (`nmap -sS [IP_victima]`). Deberías ver alertas apareciendo en los logs de Suricata (`/var/log/suricata/fast.log`).
+
+**Paso 1.3: Instalar y Configurar Wazuh (El Cerebro Centralizador)**
+Wazuh es un SIEM (Security Information and Event Management) de código abierto. Recogerá los logs de Suricata y de otras máquinas para que puedas verlos todos en un solo lugar.
+1.  **Instalación:** Necesitas dos componentes: el **Wazuh Server** (puede estar en la misma máquina que Suricata para simplificar) y el **Wazuh Agent** (se instala en la máquina "Victima").
+2.  **Configuración del Agente:** En la máquina "Victima", instala el agente de Wazuh y configúralo para que se conecte a tu servidor Wazuh y empiece a enviar sus logs (logs del sistema, logs de Apache, etc.).
+3.  **Integrar Suricata con Wazuh:** Este es el paso clave. Configura Wazuh para que lea los logs de alerta de Suricata (`/var/log/suricata/eve.json`). Wazuh tiene un módulo específico para decodificar estos logs. Cuando lo hagas, las alertas de Suricata aparecerán en la interfaz web de Wazuh, enriquecidas con la información de la máquina "Victima".
+
+**Resultado de la Fase 1:** Al final de esta fase, tendrás un panel de control (la interfaz de Wazuh) donde, en tiempo real, aparecen alertas de intrusiones en red (gracias a Suricata) y eventos de las máquinas (gracias a los agentes de Wazuh). Ya tienes un SOC pasivo funcional.
+
+---
+
+### **Fase 2: Añadir Músculo - Automatización de la Respuesta**
+
+Ahora que vemos los problemas, vamos a enseñar al sistema a reaccionar a ellos de forma simple y predecible.
+
+**Paso 2.1: Instalar y Configurar Ansible (El Brazo Ejecutor)**
+Ansible es la herramienta que ejecutará acciones en tus máquinas de forma remota y automática.
+1.  **Instalación:** Instala Ansible en tu máquina de control (puede ser tu equipo principal o una máquina dedicada).
+2.  **Inventario:** Crea un archivo de inventario (`inventory`) con las IPs de tus máquinas "Victima" y cualquier otra a la que quieras conectar.
+3.  **Conexión SSH:** Asegúrate de que puedes conectar por SSH sin contraseña desde tu máquina de control a las máquinas del inventario usando claves SSH. Esto es fundamental para que Ansible funcione.
+
+**Paso 2.2: Crear tu Primer Playbook de Respuesta**
+Un "playbook" es una receta de acciones. Vamos a crear uno simple.
+1.  **Crea el archivo:** Por ejemplo, `bloquear_ip.yml`.
+2.  **Define la tarea:** El playbook contendrá una tarea que use el módulo `iptables` o `ufw` para añadir una regla que bloquee una dirección IP específica.
+    *   Ejemplo con `ufw`:
+        ```yaml
+        ---
+        - hosts: victimas
+          tasks:
+            - name: Bloquear IP maliciosa con UFW
+              community.general.ufw:
+                rule: deny
+                from_ip: "{{ ip_a_bloquear }}"
+                state: enabled
+        ```
+3.  **Ejecución manual:** Prueba el playbook desde tu máquina de control: `ansible-playbook -i inventory bloquear_ip.yml --extra-vars "ip_a_bloquear=192.168.1.100"` (poniendo la IP de tu máquina atacante). Comprueba en la máquina "Victima" que la IP ha sido bloqueada.
+
+**Paso 2.3: Conectar Wazuh y Ansible (La Orquestación Básica)**
+Wazuh puede ejecutar comandos o scripts cuando se cumple una condición (una "active response").
+1.  **Crea un script:** En la máquina de Wazuh, crea un script simple en bash, `ejecutar_ansible.sh`, que reciba una IP como argumento y ejecute el playbook de Ansible.
+    ```bash
+    #!/bin/bash
+    IP=$1
+    /usr/bin/ansible-playbook /ruta/a/tu/playbook/bloquear_ip.yml --extra-vars "ip_a_bloquear=$IP"
+    ```
+2.  **Configura Wazuh:** En el archivo `ossec.conf` de Wazuh, define una "active response" que ejecute tu script `ejecutar_ansible.sh` cuando se dispare una alerta de Suricata de un tipo determinado (ej: un escaneo de puertos).
+
+**Resultado de la Fase 2:** Ahora, cuando lances un ataque desde Kali, no solo verás la alerta en Wazuh, sino que automáticamente la IP del atacante será bloqueada en el firewall de la máquina "Victima". Ya tienes un SOAR (Security Orchestration, Automation, and Response) básico y funcional.
+
+---
+
+### **Fase 3: Añadir Inteligencia - La Capa de IA Asistida**
+
+Aquí es donde entra la IA, no para reemplazar nada, sino para mejorar lo que ya tienes. El sistema sigue siendo controlado por humanos, la IA solo les ayuda a trabajar más rápido y mejor.
+
+**Paso 3.1: Preparar el Entorno de IA**
+1.  **Instalar Ollama:** En una máquina con suficiente recursos (puede ser tu propio portátil si tiene una buena GPU), instala Ollama.
+2.  **Descargar un Modelo:** Descarga un modelo de lenguaje capaz de razonar sobre texto. `ollama pull llama3.1` o `ollama pull codellama` son buenas opciones.
+
+**Paso 3.2: Crear el Script de Análisis con IA**
+Ahora, crearemos un script en Python que sea el puente entre Wazuh y la IA.
+1.  **Lógica del script:**
+    *   Recibe la información de una alerta de Wazuh (por ejemplo, a través de un webhook o leyendo un archivo).
+    *   Extrae los datos clave: timestamp, IP de origen, IP de destino, puerto, y el "
+
+---
+
+***1/1/2026, 4:29:49 - User:***
+
+pues me gustaria que me hicieras exactamente como en los apuntes extendidos de una asignatura todo lo que voy a tener que hacer, el procedimiento, configuraciones necesarias en lo procesos que se indiquen, una teoria que explique todo y el procedimiento segun a lo que me estoy acercando en cada paso. 
+
+---
+
+***1/1/2026, 4:31:02 - Venice:***
+
+
+Perfecto. Entendido. Vamos a tratar este proyecto como si fuera el temario de una asignatura universitaria, con su teoría, sus procedimientos detallados y sus objetivos de aprendizaje. Este documento será tu guía completa, tus "apuntes extendidos", para llevar el proyecto desde cero hasta su versión final con inteligencia asistida.
+
+---
+
+### **Apuntes de la Asignatura: Diseño e Implementación de un Laboratorio SOC con Automatización e Inteligencia Asistida**
+
+#### **Introducción y Filosofía del Proyecto**
+
+**Teoría: La Evolución de los Centros de Operaciones de Seguridad (SOC)**
+
+Un SOC tradicional es un equipo de analistas que monitorizan, analizan y responden a incidentes de seguridad de forma manual. Este modelo, aunque efectivo, es lento, costoso y propenso al error humano debido a la fatiga y al volumen masivo de alertas (ruido).
+
+Para superar estas limitaciones, surgieron dos conceptos clave:
+
+1.  **SIEM (Security Information and Event Management):** Plataformas que centralizan, correlacionan y visualizan datos de logs de múltiples fuentes (firewalls, servidores, antivirus, etc.) en un solo lugar. Su objetivo es dar visibilidad y contexto.
+2.  **SOAR (Security Orchestration, Automation, and Response):** Plataformas que van un paso más allá del SIEM. No solo centralizan la información, sino que permiten definir "playbooks" (flujos de trabajo automatizados) para responder a incidentes de forma estandarizada y sin intervención manual.
+
+**Nuestra Filosofía: Construir de Abajo hacia Arriba**
+
+En lugar de intentar construir un sistema autónomo (un objetivo complejo y a menudo poco realista), adoptaremos un enfoque pragmático y modular:
+
+1.  **Visibilidad (Fase 1):** Primero, construimos un SIEM funcional. Si no podemos ver el problema, no podemos solucionarlo.
+2.  **Reacción (Fase 2):** Añadimos capacidades de SOAR básicas. Enseñamos al sistema a ejecutar respuestas predefinidas y simples ante amenazas evidentes.
+3.  **Inteligencia Asistida (Fase 3):** Finalmente, integramos una IA local no como un cerebro autónomo, sino como un "asistente de analista junior". La IA se encargará de las tareas repetitivas y de análisis inicial (triage), enriqueciendo los datos para que el analista humano tome decisiones más rápidas e informadas.
+
+Este enfoque garantiza que cada fase es funcional por sí misma, lo que facilita la depuración y te permite tener un proyecto "entregable" al final de cada etapa.
+
+---
+
+### **Módulo 1: Cimentación del Laboratorio - Visibilidad y Detección**
+
+**Objetivo de Aprendizaje:** Al finalizar este módulo, habrás desplegado un sistema de detección de intrusiones en red (Suricata) y una plataforma de centralización de logs (Wazuh), logrando una visibilidad completa de las actividades de seguridad de tu laboratorio en un único panel.
+
+#### **1.1 Teoría: Detección de Intrusiones en Red (NIDS) y Centralización de Logs**
+
+*   **NIDS (Network-based Intrusion Detection System):** Un NIDS es un dispositivo o software que monitoriza el tráfico de una red en busca de actividades maliciosas o violaciones de políticas. Opera analizando los paquetes de datos que pasan por un punto de la red.
+    *   **Modo de Funcionamiento:** Generalmente se coloca en un "span port" de un switch o mediante un TAP (Test Access Point) para ver todo el tráfico.
+    *   **Basado en Firmas:** La mayoría de los NIDS, como Suricata, funcionan comparando el tráfico con una base de datos de "firmas" (patrones conocidos de ataque). Si un paquete coincide con una firma, se genera una alerta.
+*   **SIEM (Security Information and Event Management):** Un SIEM es el cerebro central de operaciones de seguridad. Su función principal es recolectar logs y eventos de una gran variedad de fuentes (sistemas operativos, aplicaciones, dispositivos de red, otros sistemas de seguridad) en un repositorio centralizado. A partir de ahí, permite:
+    *   **Correlación:** Relacionar eventos que parecen aislados pero que en conjunto forman un ataque.
+    *   **Visualización:** Presentar la información en dashboards, gráficos y timelines para facilitar el análisis.
+    *   **Almacenamiento:** Guardar los logs para cumplir con normativas y para investigaciones forenses.
+
+#### **1.2 Procedimiento: Despliegue del Entorno de Laboratorio**
+
+**Herramientas:**
+*   **VirtualBox:** Software de virtualización gratuito y multiplataforma.
+*   **Kali Linux:** Distribución Linux para pentesting y auditoría de seguridad (será nuestro atacante).
+*   **Ubuntu Server 22.04 LTS:** Sistema operativo robusto y versátil para nuestros servidores.
+*   **DVWA (Damn Vulnerable Web Application):** Una aplicación web intencionadamente insegura para practicar.
+
+**Arquitectura de la Red Virtual:**
+*   Crea una "Red Interna" en VirtualBox para que todas las máquinas puedan comunicarse entre sí de forma aislada de tu red principal.
+
+**Máquinas Virtuales (MVs):**
+1.  **MV `kali-atacante`:**
+    *   ISO: Kali Linux
+    *   RAM: 2GB
+    *   Disco: 25GB
+    *   Red: Red Interna
+2.  **MV `wazuh-server`:**
+    *   ISO: Ubuntu Server 22.04 LTS
+    *   RAM: 4GB
+    *   Disco: 40GB
+    *   Red: Red Interna
+    *   **Instalación:** Durante la instalación de Ubuntu, marca las opciones `OpenSSH server` y `standard system utilities`.
+3.  **MV `victima-web`:**
+    *   ISO: Ubuntu Server 22.04 LTS
+    *   RAM: 2GB
+    *   Disco: 25GB
+    *   Red: Red Interna
+    *   **Instalación:** Misma configuración que el servidor.
+
+#### **1.3 Procedimiento: Instalación y Configuración de Suricata (El Ojo del Sistema)**
+
+**Ejecución en la MV `wazuh-server`**
+
+1.  **Instalación:**
+    ```bash
+    sudo apt-get update
+    sudo apt-get install suricata -y
+    ```
+
+2.  **Configuración de la Interfaz de Red:**
+    *   Identifica tu interfaz de red con `ip a`. Supongamos que es `enp0s8`.
+    *   Edita el archivo de configuración principal: `sudo nano /etc/suricata/suricata.yaml`
+    *   Busca la sección `af-packet` y asegúrate de que tu interfaz está configurada para capturar en modo promiscuo:
+        ```yaml
+        af-packet:
+          - interface: enp0s8
+            cluster-id: 99
+            cluster-type: cluster_flow
+            defrag: yes
+            # ... otras opciones por defecto ...
+        ```
+    *   Guarda y cierra (`Ctrl+X`, `Y`, `Enter`).
+
+3.  **Gestión de Reglas (Firmas):**
+    *   Suricata necesita reglas para saber qué buscar. Usaremos el conjunto gratuito de Emerging Threats.
+    *   Edita `/etc/default/suricata` y asegúrate de que la línea `RULE_PATH` apunte a `/etc/suricata/rules`.
+    *   Descarga las reglas: `sudo suricata-update`
+    *   Esto descargará las reglas a `/var/lib/suricata/rules`. Necesitamos moverlas o enlazarlas al directorio de configuración. `sudo ln -s /var/lib/suricata/rules/* /etc/suricata/rules/`
+
+4.  **Iniciar y Verificar el Servicio:**
+    ```bash
+    sudo systemctl enable suricata
+    sudo systemctl start suricata
+    sudo suricata -T -v  # Ejecuta un test de configuración para buscar errores
+    sudo systemctl status suricata # Debe estar "active (running)"
+    ```
+
+#### **1.4 Procedimiento: Instalación y Configuración de Wazuh (El Cerebro Central)**
+
+**Parte A: Instalación del Servidor Wazuh (en la MV `wazuh-server`)**
+
+1.  **Añadir el Repositorio de Wazuh:**
+    ```bash
+    curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/wazuh.gpg
+    echo "deb https://packages.wazuh.com/4.x/apt/ stable main" | sudo tee /etc/apt/sources.list.d/wazuh.list
+    sudo apt-get update
+    ```
+
+
+
+---
+
+***1/1/2026, 4:32:16 - User:***
+
+podria continuar lo que estaba escribiendo 
+
+---
+
+***1/1/2026, 4:32:19 - Venice:***
+
+
+Claro que sí, continuemos con los apuntes exactamente donde los dejamos.
+
+---
+
+### **Módulo 1: Cimentación del Laboratorio - Visibilidad y Detección (Continuación)**
+
+#### **1.4 Procedimiento: Instalación y Configuración de Wazuh (El Cerebro Central)**
+
+**Parte A: Instalación del Servidor Wazuh (en la MV `wazuh-server`)**
+
+1.  **Añadir el Repositorio de Wazuh:**
+    ```bash
+    curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/wazuh.gpg
+    echo "deb https://packages.wazuh.com/4.x/apt/ stable main" | sudo tee /etc/apt/sources.list.d/wazuh.list
+    sudo apt-get update
+    ```
+
+2.  **Instalar el Paquete Wazuh Manager:**
+    ```bash
+    sudo apt-get install wazuh-manager -y
+    ```
+    Este paquete instala el componente central que recibe datos de los agentes, los decodifica y los correlaciona.
+
+3.  **Habilitar e Iniciar el Servicio:**
+    ```bash
+    sudo systemctl enable wazuh-manager
+    sudo systemctl start wazuh-manager
+    sudo systemctl status wazuh-manager # Debe estar "active (running)"
+    ```
+
+4.  **Instalar y Configurar Elastic Stack (Opcional pero Recomendado):**
+    Wazuh utiliza Elasticsearch para almacenar los datos y Kibana para visualizarlos. La instalación manual es compleja, por lo que Wazuh proporciona un script que lo automatiza.
+    *   **Teoría:** **Elasticsearch** es un motor de búsqueda y análisis. **Kibana** es la herramienta de visualización que se conecta a Elasticsearch para crear dashboards.
+    *   **Procedimiento:**
+        ```bash
+        # Descargar el script de instalación
+        curl -s https://packages.wazuh.com/4.x/elastic/wazuh-install.sh | bash
+        
+        # Una vez instalado, los servicios deberían estar activos. Verifícalo:
+        sudo systemctl status elasticsearch kibana
+        ```
+    *   **Acceso a Kibana:** Abre un navegador en tu máquina anfitrión y ve a `http://<IP_de_wazuh-server>:5601`. Para las primeras veces, puedes usar el usuario `elastic` y la contraseña que se generó durante la instalación (está en `/usr/share/elasticsearch/bin/elasticsearch-reset-password`).
+
+**Parte B: Instalación del Agente Wazuh (en la MV `victima-web`)**
+
+1.  **Añadir el Repositorio de Wazuh (igual que en el servidor):**
+    ```bash
+    curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/wazuh.gpg
+    echo "deb https://packages.wazuh.com/4.x/apt/ stable main" | sudo tee /etc/apt/sources.list.d/wazuh.list
+    sudo apt-get update
+    ```
+
+2.  **Instalar el Agente:**
+    ```bash
+    sudo apt-get install wazuh-agent -y
+    ```
+
+3.  **Registrar el Agente en el Manager:**
+    *   En el servidor (`wazuh-server`), ejecuta el siguiente comando para añadir el agente:
+        ```bash
+        sudo /var/ossec/bin/manage_agents
+        ```
+    *   Selecciona la opción `A` (Add) y sigue las instrucciones. Te pedirá un nombre (ej: `victima-web`) y una IP. Al final, te generará una **clave** muy larga. ¡Cópiala!
+
+4.  **Configurar el Agente para que se Conecte al Manager:**
+    *   En la máquina `victima-web`, edita el archivo de configuración del agente: `sudo nano /var/ossec/etc/ossec.conf`
+    *   Busca la sección `<client>` y modifícala:
+        ```xml
+        <client>
+            <server>
+                <address>IP_DE_WAZUH_SERVER</address> <!-- ¡Pon la IP real! -->
+                <port>1514</port>
+                <protocol>udp</protocol>
+            </server>
+            <config-profile>generic</config-profile>
+        </client>
+        ```
+    *   Ahora, pega la clave que generaste en el paso anterior en la sección `<auth>`:
+        ```xml
+        <auth>
+            <key>AQUI_VA_LA_CLAVE_LARGA_QUE_COPIASTE</key>
+        </auth>
+        ```
+    *   Guarda y cierra.
+
+5.  **Iniciar y Verificar el Agente:**
+    ```bash
+    sudo systemctl enable wazuh-agent
+    sudo systemctl start wazuh-agent
+    sudo systemctl status wazuh-agent # Debe estar "active (running)"
+    ```
+    *   Vuelve al servidor y ejecuta de nuevo `sudo /var/ossec/bin/manage_agents`. Ahora deberías ver el agente `victima-web` con el estatus "Active".
+
+#### **1.5 Procedimiento: Integración de Suricata y Wazuh**
+
+Este es el paso crucial que une la detección de red con la centralización.
+
+1.  **Teoría:** Wazuh tiene un decodificador específico para el formato de logs JSON de Suricata (`eve.json`). Simplemente necesitamos decirle a Wazuh dónde encontrar ese archivo y que lo vigile.
+
+2.  **Configuración en el Wazuh Manager (`wazuh-server`):**
+    *   Edita el archivo de configuración del manager: `sudo nano /var/ossec/etc/ossec.conf`
+    *   Añade la siguiente configuración dentro de la sección `<ossec_config>` para vigilar el log de Suricata:
+        ```xml
+        <localfile>
+            <log_format>json</log_format>
+            <file>/var/log/suricata/eve.json</file>
+        </localfile>
+        ```
+    *   Reinicia el manager para aplicar los cambios: `sudo systemctl restart wazuh-manager`
+
+3.  **Validación de la Integración:**
+    *   Desde tu máquina `kali-atacante`, lanza un escaneo de puertos simple a la `victima-web`:
+        ```bash
+        nmap -sS <IP_de_victima-web>
+        ```
+    *   Espera unos 30-60 segundos.
+    *   En Kibana (`http://<IP_wazuh-server>:5601`), ve al menú de Wazuh (icono del cuadradito). En la sección "Security events", deberías ver una nueva alerta con el `rule.name` algo como "ET SCAN Potential SSH Scan". Al abrirla, verás los detalles de la alerta de Suricata, incluyendo la IP de origen (tu Kali).
+
+**Resultado del Módulo 1:** ¡Felicidades! Tienes un SIEM funcional. Estás detectando actividades maliciosas en la red y viéndolas centralizadas junto con los logs del sistema operativo, todo en un único panel de control.
+
+---
+
+### **Módulo 2: Añadiendo Músculo - Automatización de la Respuesta con SOAR**
+
+**Objetivo de Aprendizaje:** Al finalizar este módulo, habrás integrado una herramienta de automatización (Ansible) y la habrás conectado con tu SIEM (Wazuh) para ejecutar respuestas automáticas y básicas (como bloquear una IP) cuando se detecte una amenaza.
+
+#### **2.1 Teoría: Automatización y Orquestación con Ansible**
+
+*   **Ansible:** Es una herramienta de automatización de código abierto ("infrastructure as code"). Utiliza archivos de texto simples (YAML) llamados "Playbooks" para describir las tareas que se deben ejecutar en máquinas remotas.
+*   **Agenteless:** La gran ventaja de Ansible es que no necesita instalar ningún agente en las máquinas "Victima". Se conecta a ellas a través de SSH, lo que simplifica enormemente la gestión.
+*   **Playbook:** Es el archivo central. Define una lista de "plays" y cada "play" contiene una lista de "tasks" (tareas). Cada tarea llama a un "módulo" de Ansible (ej: `apt`, `service`, `ufw`) para realizar una acción concreta.
+*   **Active Response en Wazuh:** Es una funcionalidad que permite a Wazuh ejecutar un comando o script en el servidor manager cuando se cumple una condición (una regla se dispara). Este es el punto de unión perfecto para invocar a Ansible.
+
+#### **2.2 Procedimiento: Preparación del Entorno de Automatización**
+
+**Ejecución en tu Máquina Anfitrión (o una nueva MV `ansible-control`)**
+
+1.  **Instalación de Ansible:**
+    ```bash
+    # En Linux (Ubuntu/Debian)
+    sudo apt update
+    sudo apt install ansible
+
+---
+
+***1/1/2026, 4:33:08 - User:***
+
+puedes continuar con lo que estabas escribiendo 
+
+---
+
+***1/1/2026, 4:33:14 - Venice:***
+
+
+Por supuesto. Continuemos con los apuntes exactamente donde los dejamos.
+
+---
+
+### **Módulo 2: Añadiendo Músculo - Automatización de la Respuesta con SOAR (Continuación)**
+
+#### **2.2 Procedimiento: Preparación del Entorno de Automatización**
+
+**Ejecución en tu Máquina Anfitrión (o una nueva MV `ansible-control`)**
+
+1.  **Instalación de Ansible:**
+    ```bash
+    # En Linux (Ubuntu/Debian)
+    sudo apt update
+    sudo apt install ansible -y
+    ```
+
+2.  **Configuración del Inventario:**
+    *   **Teoría:** El inventario es un archivo que le dice a Ansible sobre qué máquinas debe operar. Puede ser muy simple (un archivo de texto plano) o complejo (usando scripts dinámicos). Usaremos la forma más simple.
+    *   **Procedimiento:** Crea un archivo llamado `inventory` en tu directorio de trabajo:
+        ```bash
+        nano inventory
+        ```
+    *   Añade el siguiente contenido, ajustando la IP a la de tu máquina `victima-web`:
+        ```ini
+        [victimas]
+        victima-web ansible_host=<IP_de_la_maquina_victima-web>
+        ```
+    *   Guarda y cierra (`Ctrl+X`, `Y`, `Enter`).
+
+3.  **Configuración de Acceso SSH sin Clave:**
+    *   **Teoría:** Para que los playbooks de Ansible se ejecuten sin pedir una contraseña cada vez, necesitamos establecer una confianza basada en claves SSH. Tu máquina de control generará un par de claves (pública y privada) y copiará la clave pública a la máquina víctima, autorizándola a conectar.
+    *   **Procedimiento:**
+        *   **En tu máquina de control:** Genera el par de claves si no lo tienes ya:
+            ```bash
+            ssh-keygen -t rsa
+            ```
+            Simplemente presiona Enter en todas las preguntas para aceptar las ubicaciones por defecto y no poner contraseña.
+        *   **Copia la clave pública a la máquina víctima:** Ejecuta este comando, reemplazando `usuario` por el nombre de usuario que usas en la `victima-web` y la IP:
+            ```bash
+            ssh-copy-id usuario@<IP_de_la_maquina_victima-web>
+            ```
+            Te pedirá la contraseña de `usuario` en la máquina `victima-web` por última vez.
+        *   **Verificación:** Intenta conectarte por SSH. Deberías poder entrar sin que te pida contraseña:
+            ```bash
+            ssh usuario@<IP_de_la_maquina_victima-web>
+            ```
+            Si funciona, escribe `exit` para volver a tu máquina de control.
+
+#### **2.3 Procedimiento: Creación del Primer Playbook de Respuesta**
+
+Vamos a crear la "receta" que bloqueará una IP maliciosa usando el firewall `ufw` (Uncomplicated Firewall), que viene preinstalado en Ubuntu.
+
+1.  **En tu máquina de control**, crea el archivo del playbook:
+    ```bash
+    nano bloquear_ip.yml
+    ```
+
+2.  **Añade el siguiente contenido YAML:**
+    ```yaml
+    ---
+    - name: Bloquear una IP maliciosa en las víctimas
+      hosts: victimas
+      become: yes # Esto es crucial para ejecutar comandos con sudo
+
+      tasks:
+        - name: Asegurarse de que UFW está instalado
+          apt:
+            name: ufw
+            state: present
+
+        - name: Denegar el acceso a la IP maliciosa
+          community.general.ufw:
+            rule: deny
+            from_ip: "{{ ip_a_bloquear }}"
+            state: enabled
+    ```
+    *   **Análisis del Playbook:**
+        *   `hosts: victimas`: Se ejecutará en los hosts definidos en el grupo `[victimas]` de nuestro inventario.
+        *   `become: yes`: Pide privilegios de sudo para ejecutar las tareas.
+        *   `apt`: Módulo para gestionar paquetes. Nos aseguramos de que `ufw` está presente.
+        *   `community.general.ufw`: Módulo para gestionar reglas del firewall UFW.
+        *   `from_ip: "{{ ip_a_bloquear }}"`: Usa una variable. Ansible la rellenará cuando ejecutemos el playbook.
+
+3.  **Ejecución Manual del Playbook para Probarlo:**
+    *   **Procedimiento:** Desde tu máquina de control, ejecuta el playbook usando la IP de tu máquina `kali-atacante` como la IP a bloquear:
+        ```bash
+        ansible-playbook -i inventory bloquear_ip.yml --extra-vars "ip_a_bloquear=<IP_de_kali-atacante>"
+        ```
+    *   **Verificación:**
+        *   **En la máquina `victima-web`:** Comprueba el estado de UFW y la nueva regla:
+            ```bash
+            sudo ufw status verbose
+            ```
+            Deberías ver una línea como `DENY IN from <IP_de_kali-atacante>`.
+        *   **Desde la máquina `kali-atacante`:** Intenta hacer un ping o un escaneo a la `victima-web`. El tráfico debería ser rechazado.
+    *   **Limpieza:** No olvides desbloquear la IP para poder seguir haciendo pruebas:
+        ```bash
+        # En la máquina victima-web
+        sudo ufw delete deny from <IP_de_kali-atacante>
+        ```
+
+#### **2.4 Procedimiento: Conectar Wazuh y Ansible (La Orquestación)**
+
+Ahora uniremos todo. Wazuh detectará el ataque y, en lugar de solo mostrar la alerta, ejecutará nuestro playbook de Ansible.
+
+1.  **Crear el Script Intermediario en el Servidor Wazuh:**
+    *   **Teoría:** La "active response" de Wazuh es limitada. No puede ejecutar directamente un comando tan complejo como `ansible-playbook`. La solución es un pequeño script en bash que recibe los parámetros de Wazuh y los formatea para llamar a Ansible.
+    *   **Procedimiento (en la MV `wazuh-server`):**
+        *   Instala Ansible en el servidor Wazuh también: `sudo apt install ansible -y`
+        *   Copia tu archivo `inventory` y `bloquear_ip.yml` a una carpeta en el servidor Wazuh, por ejemplo, `/opt/ansible_soa/`.
+        *   Crea el script:
+            ```bash
+            sudo nano /var/ossec/active-response/bin/ejecutar_ansible.sh
+            ```
+        *   Añade el siguiente contenido:
+            ```bash
+            #!/bin/bash
+
+            # Wazuh pasa los argumentos así:
+            # $1 = action (add/delete)
+            # $2 = user_name (ej: wazuh)
+            # $3 = alert_id (ej: 1234567.1)
+            # $4 = rule_id
+            # $5 = rule_level
+            # $6 = rule_message
+            # $7 = srcip
+            # $8 = dstip
+            # $9 = protocol
+            # $10 = ...
+
+            LOCAL=`dirname $0`
+            IP="$7"
+
+            # Ruta a tu playbook y a tu inventario
+            PLAYBOOK_PATH="/opt/ansible_soa/bloquear_ip.yml"
+            INVENTORY_PATH="/opt/ansible_soa/inventory"
+
+            # Ejecuta el playbook solo si la acción es "add" (cuando se crea la alerta)
+            if [ "$1" = "add" ]; then
+                cd $LOCAL
+                /usr/bin/ansible-playbook -i $INVENTORY_PATH $PLAYBOOK_PATH --extra-vars "ip_a_bloquear=$IP"
+            fi
+
+            exit 0;
+            ```
+        *   **Dale permisos de ejecución:**
+            ```bash
+            sudo chmod +x /var/ossec/active-response/bin/ejecutar_ansible.sh
+            ```
+
+2.  **Configurar la Active Response en Wazuh:**
+    *   **Procedimiento (en la MV `wazuh-server`):**
+        *   Edita el archivo `ossec.conf`: `sudo nano /var/ossec/etc/ossec.conf`
+        *   Añade el siguiente bloque dentro de la sección `<ossec_config>`:
+            ```xml
+            <command>
+                <name>block-ip-with-ansible</name>
+                <executable>ejecutar_ansible.sh</executable>
+                <expect>srcip</expect>
+                <timeout_allowed>yes</timeout_allowed>
+            </command>
+
+            <active-response>
+                <command>block-ip-with-ansible</command>
+                <location>local</location>
+                <rules_id>2010502,2010503</rules_id> <!-- IDs de reglas de Nmap -->
+                <timeout>3600</timeout> <!-- Desbloqueará la IP después de 1 hora -->
+            </active-response>
+            ```
+            *
+
+---
+
+***1/1/2026, 4:34:55 - User:***
+
+puedes continuar con lo que estabas escribiendo
+
+---
+
+***1/1/2026, 4:34:59 - Venice:***
+
+
+De acuerdo, continuemos con los apuntes donde los dejamos.
+
+---
+
+### **Módulo 2: Añadiendo Músculo - Automatización de la Respuesta con SOAR (Continuación)**
+
+#### **2.4 Procedimiento: Conectar Wazuh y Ansible (La Orquestación)**
+
+2.  **Configurar la Active Response en Wazuh:**
+    *   **Procedimiento (en la MV `wazuh-server`):**
+        *   Edita el archivo `ossec.conf`: `sudo nano /var/ossec/etc/ossec.conf`
+        *   Añade el siguiente bloque dentro de la sección `<ossec_config>`:
+            ```xml
+            <command>
+                <name>block-ip-with-ansible</name>
+                <executable>ejecutar_ansible.sh</executable>
+                <expect>srcip</expect>
+                <timeout_allowed>yes</timeout_allowed>
+            </command>
+
+            <active-response>
+                <command>block-ip-with-ansible</command>
+                <location>local</location>
+                <rules_id>2010502,2010503</rules_id> <!-- IDs de reglas de Nmap -->
+                <timeout>3600</timeout> <!-- Desbloqueará la IP después de 1 hora -->
+            </active-response>
+            ```
+            *   **Análisis de la Configuración:**
+                *   `<command>`: Define un nuevo comando que Wazuh puede ejecutar. Le damos un nombre (`block-ip-with-ansible`) y le decimos qué script ejecutar (`ejecutar_ansible.sh`). La etiqueta `<expect>srcip</expect>` es fundamental: le dice a Wazuh que debe pasar la IP de origen (`srcip`) de la alerta como argumento al script.
+                *   `<active-response>`: Activa el comando anterior. Lo más importante aquí es `<rules_id>`. Hemos puesto los IDs de reglas de Suricata para escaneos de Nmap (puedes encontrar más IDs en los logs de Wazuh). Esto significa que *solo* si una alerta coincide con uno de esos IDs, se ejecutará la respuesta.
+                *   `<timeout>`: Es una característica de seguridad excelente. Wazuh automáticamente ejecutará el script de nuevo con la acción "delete" después de 3600 segundos, lo que desbloqueará la IP. Para que esto funcione, tu playbook necesitaría una tarea para desbloquear, pero por ahora, el script solo se ejecuta en "add". La IP se quedará bloqueada hasta que la quites manualmente.
+
+3.  **Reiniciar y Validar el Flujo Completo:**
+    *   **Procedimiento:**
+        *   Reinicia el manager de Wazuh para cargar la nueva configuración: `sudo systemctl restart wazuh-manager`
+        *   Asegúrate de que la IP de tu `kali-atacante` no está bloqueada en la `victima-web`.
+        *   Desde `kali-atacante`, lanza de nuevo el escaneo: `nmap -sS <IP_de_victima-web>`
+        *   Espera entre 30 y 90 segundos.
+    *   **Verificación:**
+        *   **En la `victima-web`:** Ejecuta `sudo ufw status`. Deberías ver la regla `DENY` para la IP de Kali.
+        *   **En Kibana:** Verás la alerta de Suricata, y si revisas los logs del sistema en el servidor Wazuh (`/var/ossec/logs/ossec.log`), deberías ver líneas que indican que la `active-response` se ha ejecutado.
+        *   **Prueba final:** Intenta hacer ping desde Kali a la víctima. No debería funcionar.
+
+**Resultado del Módulo 2:** ¡Enhorabuena! Has construido un sistema SOAR funcional. Detecta una amenaza específica y reacciona automáticamente para neutralizarla, sin intervención humana. Has pasado de un sistema pasivo a un sistema activo.
+
+---
+
+### **Módulo 3: Añadiendo Inteligencia - Análisis Asistido por IA**
+
+**Objetivo de Aprendizaje:** Al finalizar este módulo, habrás integrado un modelo de lenguaje local (LLM) para que actúe como asistente de análisis. El sistema no será autónomo, sino que enriquecerá las alertas con resúmenes, contexto y recomendaciones generadas por IA, facilitando el trabajo del analista humano.
+
+#### **3.1 Teoría: LLMs como Asistentes de Ciberseguridad**
+
+*   **Modelos de Lenguaje Grandes (LLMs):** Son modelos de IA entrenados con enormes cantidades de texto. Son excelentes para entender, resumir, generar y clasificar información basada en lenguaje natural.
+*   **Aplicación en un SOC:** En lugar de usar un LLM para *tomar decisiones* (lo cual es arriesgado y propenso a "alucinaciones"), lo usaremos para *procesar información*:
+    *   **Triage y Resumen:** Una alerta puede venir con decenas de líneas de logs. El LLM puede leerlo todo y generar un resumen conciso: "Se detectó un escaneo de puertos desde la IP X a los puertos 22, 80, 443 en el servidor web. El patrón coincide con una fase de reconocimiento de ataque."
+    *   **Enriquecimiento de Contexto:** El LLM puede analizar la firma de la regla de Suricata y explicar en lenguaje sencillo qué significa esa firma y qué tipo de ataque representa.
+    *   **Generación de Informes:** Puede tomar los datos de la alerta y formatearlos en un informe estructizado, listo para ser enviado por email o publicado en un chat.
+*   **¿Por qué Ollama y un Modelo Local?**
+    *   **Privacidad:** Los datos de tus alertas de seguridad nunca salen de tu laboratorio. No se envían a APIs de terceros como OpenAI o Google.
+    *   **Coste:** Una vez que tienes el hardware, el uso es gratuito. No pagas por token.
+    *   **Control:** Tienes control total sobre el modelo y su configuración.
+
+#### **3.2 Procedimiento: Preparación del Entorno de IA**
+
+**Ejecución en tu Máquina Anfitrión (o una nueva MV `ia-server` con buena GPU/RAM)**
+
+1.  **Instalación de Ollama:**
+    ```bash
+    curl -fsSL https://ollama.com/install.sh | sh
+    ```
+    Este comando descarga e instala el servicio de Ollama en tu sistema.
+
+2.  **Verificación y Descarga de un Modelo:**
+    *   Inicia el servicio de Ollama si no lo hizo automáticamente: `sudo systemctl start ollama`
+    *   Descarga un modelo ligero pero capaz. `Llama 3.1` (la versión 8b es un buen punto de partida) es excelente.
+        ```bash
+        ollama pull llama3.1:8b
+        ```
+    *   Prueba que funciona interactuando con él:
+        ```bash
+        ollama run llama3.1:8b
+        ```
+        Escribe `hola` y asegúrate de que responde. Salir con `/bye`.
+
+#### **3.3 Procedimiento: Creación del Script de Análisis con IA**
+
+Este script en Python será el puente entre la alerta de Wazuh y el LLM de Ollama.
+
+1.  **Instalar la librería de Ollama para Python:**
+    ```bash
+    pip install ollama
+    ```
+
+2.  **Crear el Script de Análisis:**
+    *   **Procedimiento (en la MV `wazuh-server`):**
+        *   Crea el archivo del script: `sudo nano /var/ossec/active-response/bin/analizar_con_ia.sh`
+        *   Añade el siguiente contenido en Python:
+            ```python
+            #!/usr/bin/env python3
+            import sys
+            import json
+            import ollama
+
+            # --- CONFIGURACIÓN ---
+            OLLAMA_MODEL = "llama3.1:8b"
+            RUTA_INFORME = "/tmp/informe_incidente_{}.json".format(sys.argv[3]) # Usamos el alert_id para nombrar el archivo
+            # ---------------------
+
+            # Wazuh pasa los argumentos al script
+            # sys.argv[1] = action (add)
+            # sys.argv[2] = user_name
+            # sys.argv[3] = alert_id
+            # sys.argv[4] = rule_id
+            # sys.argv[5] = rule_level
+            # sys.argv[6] = rule_message
+            # sys.argv[7] = srcip
+            # sys.argv[8] = dstip
+
+            # Solo actuamos en la creación de la alerta
+            if sys.argv[1] != "add":
+                sys.exit(0)
+
+            # Simulamos la obtención del log completo de la alerta.
+            # En un escenario real, aquí consultarías a la API de Wazuh para obtener el JSON completo de la alerta.
+           
+
+---
+
+***1/1/2026, 4:36:06 - User:***
+
+puedes continuar con lo que estabas escribiendo
+
+---
+
+***1/1/2026, 4:36:09 - Venice:***
+
+
+Por supuesto. Aquí tienes la continuación de los apuntes, retomando el script de Python y finalizando el módulo 3 y el proyecto.
+
+---
+
+### **Módulo 3: Añadiendo Inteligencia - Análisis Asistido por IA (Continuación)**
+
+#### **3.3 Procedimiento: Creación del Script de Análisis con IA (Continuación)**
+
+2.  **Crear el Script de Análisis (Continuación):**
+    *   **Procedimiento (en la MV `wazuh-server`):**
+        *   Continúa editando el archivo `/var/ossec/active-response/bin/analizar_con_ia.sh` con el siguiente contenido en Python. El script anterior era incompleto, aquí está la versión completa y funcional:
+            ```python
+            #!/usr/bin/env python3
+            import sys
+            import json
+            import ollama
+            import subprocess
+
+            # --- CONFIGURACIÓN ---
+            OLLAMA_MODEL = "llama3.1:8b"
+            RUTA_INFORME = "/tmp/informe_incidente_{}.json".format(sys.argv[3]) # Usamos el alert_id para nombrar el archivo
+            # ---------------------
+
+            # Wazuh pasa los argumentos al script
+            # sys.argv[1] = action (add)
+            # sys.argv[2] = user_name
+            # sys.argv[3] = alert_id
+            # sys.argv[4] = rule_id
+            # sys.argv[5] = rule_level
+            # sys.argv[6] = rule_message
+            # sys.argv[7] = srcip
+            # sys.argv[8] = dstip
+
+            # Solo actuamos en la creación de la alerta
+            if sys.argv[1] != "add":
+                sys.exit(0)
+
+            # Simulamos la obtención del log completo de la alerta.
+            # En un escenario real, aquí consultaríamos a la API de Wazuh.
+            # Para simplificar, construiremos un objeto de datos con lo que tenemos.
+            datos_alerta = {
+                "timestamp": "N/A",
+                "rule_id": sys.argv[4],
+                "rule_level": sys.argv[5],
+                "rule_message": sys.argv[6],
+                "source_ip": sys.argv[7],
+                "destination_ip": sys.argv[8],
+                "full_log": "Esta es una simulación del log completo. En un caso real, contendría todos los detalles del paquete y del contexto."
+            }
+
+            # --- PROMPT PARA EL LLM ---
+            # Este es el corazón del sistema. Le damos al LLM un rol y una tarea clara.
+            prompt = f"""
+            Eres un analista de ciberseguridad junior experto en resumir incidentes. Tu tarea es analizar la siguiente alerta de seguridad y generar un informe estructurado en formato JSON.
+
+            La alerta contiene los siguientes campos:
+            - rule_id: {datos_alerta['rule_id']}
+            - rule_message: {datos_alerta['rule_message']}
+            - source_ip: {datos_alerta['source_ip']}
+            - destination_ip: {datos_alerta['destination_ip']}
+            - full_log: {datos_alerta['full_log']}
+
+            Debes generar un JSON con exactamente esta estructura:
+            {{
+              "resumen_ejecutivo": "Un resumen de una línea explicando qué ha pasado.",
+              "analisis_detallado": "Una explicación más técnica de lo que significa la regla de seguridad activada y qué tipo de ataque o comportamiento sugiere.",
+              "recomendaciones": [
+                "Recomendación 1 sobre qué hacer (ej: investigar la IP de origen).",
+                "Recomendación 2 sobre acciones a futuro (ej: revisar políticas de firewall)."
+              ]
+            }}
+            No añadas ningún texto antes ni después del JSON. Responde únicamente con el objeto JSON.
+            """
+            # --- FIN DEL PROMPT ---
+
+            try:
+                # Llamamos a la API de Ollama
+                response = ollama.chat(
+                    model=OLLAMA_MODEL,
+                    messages=[{'role': 'user', 'content': prompt}]
+                )
+
+                # Extraemos el contenido de la respuesta
+                contenido_json = response['message']['content']
+
+                # Intentamos parsear el JSON para asegurarnos de que es válido
+                informe_ia = json.loads(contenido_json)
+
+                # Guardamos el informe en un archivo
+                with open(RUTA_INFORME, 'w') as f:
+                    json.dump(informe_ia, f, indent=2)
+
+                # Opcional: Imprimir en el log de Wazuh para depuración
+                print(f"Informe de IA generado para la alerta {sys.argv[3]} en {RUTA_INFORME}")
+
+            except Exception as e:
+                # Si algo falla, lo escribimos en el log de errores de Wazuh
+                print(f"Error al generar informe de IA para alerta {sys.argv[3]}: {e}", file=sys.stderr)
+                sys.exit(1)
+
+            ```
+        *   **Dale permisos de ejecución:**
+            ```bash
+            sudo chmod +x /var/ossec/active-response/bin/analizar_con_ia.sh
+            ```
+
+#### **3.4 Procedimiento: Integración del Análisis de IA en el Flujo de Wazuh**
+
+Ahora, configuraremos Wazuh para que, además de (o en lugar de) bloquear la IP, ejecute este script de análisis.
+
+1.  **Configurar una Nueva Active Response en Wazuh:**
+    *   **Procedimiento (en la MV `wazuh-server`):**
+        *   Edita de nuevo el archivo `ossec.conf`: `sudo nano /var/ossec/etc/ossec.conf`
+        *   Añade una nueva definición de `<command>` y una nueva `<active-response>`. Puedes añadirlas debajo de las que ya tenías.
+            ```xml
+            <!-- Comando para analizar con IA -->
+            <command>
+                <name>analyze-with-ai</name>
+                <executable>analizar_con_ia.sh</executable>
+                <expect>srcip</expect>
+                <timeout_allowed>no</timeout_allowed>
+            </command>
+
+            <!-- Active Response que ejecuta el análisis -->
+            <active-response>
+                <command>analyze-with-ai</command>
+                <location>local</location>
+                <rules_id>2010502,2010503</rules_id> <!-- Mismas reglas que antes -->
+            </active-response>
+            ```
+            *   **Análisis de la Configuración:**
+                *   `<command>`: Define el nuevo script `analizar_con_ia.sh`.
+                *   `<active-response>`: Lo activa para las mismas reglas de Nmap. Fíjate que no hay `<timeout>`. El análisis es un evento instantáneo, no una acción persistente como el bloqueo.
+
+2.  **Reiniciar y Validar el Flujo con IA:**
+    *   **Procedimiento:**
+        *   Reinicia el manager de Wazuh: `sudo systemctl restart wazuh-manager`
+        *   Asegúrate de que la IP de tu `kali-atacante` no está bloqueada.
+        *   Desde `kali-atacante`, lanza de nuevo el escaneo: `nmap -sS <IP_de_victima-web>`
+        *   Espera entre 60 y 120 segundos (el LLM puede tardar un poco en responder).
+    *   **Verificación:**
+        *   **En el servidor Wazuh:** Revisa si se ha creado el archivo del informe. El nombre del archivo será el `alert_id`, que puedes ver en Kibana.
+            ```bash
+            ls -l /tmp/informe_incidente_*
+            # O si sabes el ID, por ejemplo 1678901.2:
+            cat /tmp/informe_incidente_1678901.2.json
+            ```
+            Deberías ver un JSON limpio y estructurado como este:
+            ```json
+            {
+              "resumen_ejecutivo": "Se ha detectado un escaneo de puertos SYN desde la IP 192.168.1.10 hacia la máquina 192.168.1.20.",
+              "analisis_detallado": "La regla 'ET SCAN Potential SSH Scan' se activó cuando se recibieron múltiples paquetes SYN a puertos comunes sin una finalización del handshake TCP. Este es un método clásico de reconocimiento para identificar servicios abiertos, a menudo utilizado antes de un intento de explotación.",
+              "recomendaciones": [
+                "Investigar la IP de origen 192.168.1.10 para determinar si es conocida o maliciosa.",
+                "Considerar implementar rate-limiting en el firewall para mitigar escaneos masivos."
+              ]
+            }
+            ```
+        *   **En Kibana:** Verás la alerta de Suricata y en los logs del servidor (`/var/ossec/logs/ossec.log`) verás la línea de "Informe de IA generado".
+
+**Resultado del Módulo 3:** ¡Lo tienes! Tu sistema ahora no solo reacciona, sino que también *piensa* sobre el incidente y te presenta un análisis preliminar, ahorrándote el primer paso de investigación. Has integrado con éxito una
+
+---
+
+***1/1/2026, 4:37:13 - User:***
+
+puedes continuar con lo que estabas escribiendo
+
+---
+
+***1/1/2026, 4:37:17 - Venice:***
+
+
+Claro, aquí tienes la conclusión de los apuntes, cerrando el módulo 3 y el proyecto completo.
+
+---
+
+### **Módulo 3: Añadiendo Inteligencia - Análisis Asistido por IA (Conclusión)**
+
+**Resultado del Módulo 3:** ¡Lo tienes! Tu sistema ahora no solo reacciona, sino que también *piensa* sobre el incidente y te presenta un análisis preliminar, ahorrándote el primer paso de investigación. Has integrado con éxito una capa de inteligencia asistida que cumple tu requisito principal: **apoya al analista sin convertir el sistema en una caja negra autónoma.**
+
+---
+
+### **Conclusión del Proyecto y Próximos Pasos**
+
+**Resumen del Logro:**
+
+Has completado con éxito el diseño y la implementación de un laboratorio SOC modular y escalable. El viaje que has realizado es el reflejo de cómo se construyen los sistemas de seguridad reales:
+
+1.  **Fase 1 - Visibilidad (El Ojo):** Implementaste Suricata para detectar amenazas en la red y Wazuh como un SIEM para centralizar toda la información. Ahora puedes *ver* qué está pasando.
+2.  **Fase 2 - Reacción (El Brazo):** Integraste Ansible para automatizar respuestas y lo conectaste a Wazuh a través de "active responses". Ahora puedes *actuar* de forma automática y consistente.
+3.  **Fase 3 - Inteligencia (El Cerebro Asistente):** Añadiste una capa de IA local con Ollama para analizar y enriquecer las alertas. Ahora tus herramientas te *ayudan a pensar* más rápido.
+
+El resultado final es un sistema robusto, comprensible y perfectamente alineado con tu visión inicial: un laboratorio de seguridad con detección, centralización, automatización básica y una capa de IA de apoyo, todo construido de forma incremental para facilitar el desarrollo y evitar la complejidad innecesaria.
+
+**Posibles Mejoras y Expansiones (Para Futuros Proyectos):**
+
+El trabajo que has hecho es una base excelente. Desde aquí, las posibilidades son enormes. Aquí tienes algunas ideas para llevarlo aún más lejos:
+
+*   **Mejora del Script de IA:**
+    *   **Consulta Real a la API de Wazuh:** En lugar de simular los datos, el script de Python podría usar la API de Wazuh para obtener el JSON completo de la alerta, incluyendo todos los campos del log de Suricata. Esto daría a la IA muchísimo más contexto para un análisis más rico.
+    *   **Análisis de Logs Adicionales:** Configura el script para que también recoja logs de la máquina víctima (ej: logs de Apache o de auth.log) en el momento del ataque y se los pase al LLM para una correlación más profunda.
+
+*   **Automatización de Notificaciones:**
+    *   **Integración con RocketChat/Slack:** Modifica el script de IA para que, después de generar el informe JSON, lo formatee en un mensaje legible y lo envíe a un canal de RocketChat o Slack mediante sus respectivas APIs. Así, el equipo humano es notificado instantáneamente con un resumen ya procesado.
+
+*   **Ampliación de la Detección:**
+    *   **Integrar más fuentes:** Añade más agentes de Wazuh a otras máquinas (un servidor de base de datos, una máquina Windows) para centralizar más tipos de logs.
+    *   **Añadir un HIDS:** Wazuh tiene su propio motor de detección de intrusiones basado en host (HIDS). Actívalo en el agente para detectar cambios en archivos críticos, creación de usuarios sospechosos, etc.
+
+*   **Perfeccionamiento de la Respuesta (SOAR Avanzado):**
+    *   **Playbooks más complejos:** Crea playbooks de Ansible que no solo bloqueen la IP, sino que también:
+        *   Aíslen la máquina víctima de la red.
+        *   Hagan una captura de memoria de la máquina víctima para análisis forense.
+        *   Recojan los logs relevantes y los copien a un servidor seguro.
+
+*   **Exploración de otros modelos de IA:**
+    *   Experimenta con modelos más especializados en código (como `codellama`) para que la IA pueda analizar fragmentos de código encontrados en logs o incluso sugerir reglas de Suricata personalizadas para detectar un ataque nuevo que acabas de ver.
+
+Has creado un proyecto del que puedes estar orgulloso. No solo es técnicamente sólido, sino que demuestra una comprensión madura de cómo construir sistemas de seguridad de manera práctica y efectiva. ¡Excelente trabajo
+
+---
+
+***1/1/2026, 4:38:10 - User:***
+
+puedes alojar la información de este proyecto de sus 3 fases que me has aportado, en un pdf ?
+
+---
+
+***1/1/2026, 4:38:16 - Venice:***
+
+
+Entiendo perfectamente que quieras tener toda esta información compilada en un único documento PDF para poder consultarlo, imprimirlo o compartirlo fácilmente. Es una excelente idea para tener tu "guía de proyecto" siempre a mano.
+
+Sin embargo, como modelo de texto, no tengo la capacidad directa de generar y crear un archivo PDF. Mi función es generar el contenido, pero no puedo interactuar con tu sistema operativo para crear archivos.
+
+Pero no te preocupes, te ofrezco dos soluciones muy sencillas para que tengas tu PDF en menos de un minuto:
+
+### **Opción 1: La Más Rápida (Copiar y Pegar)**
+
+1.  **Selecciona todo el texto** de esta conversación, desde el principio de los "Apuntes de la Asignatura" hasta la "Conclusión del Proyecto".
+2.  **Cópialo** (`Ctrl+C` o `Cmd+C`).
+3.  **Abre tu procesador de textos** preferido (Microsoft Word, Google Docs, LibreOffice Writer, etc.).
+4.  **Pega el texto** (`Ctrl+V` o `Cmd+V`).
+5.  **Revisa el formato:** Es posible que tengas que ajustar los títulos, los bloques de código y los saltos de página para que queden bien.
+6.  **Guarda o exporta el documento** como PDF desde la opción "Archivo" -> "Guardar como" o "Exportar".
+
+### **Opción 2: La Más Profesional (Usando Markdown)**
+
+Si quieres que el formato sea perfecto desde el principio, especialmente para los bloques de código, puedes usar un editor de Markdown.
+
+1.  **Copia todo el contenido** de nuestra conversación como en la opción anterior.
+2.  **Pégalo en un editor de Markdown online** como [Dillinger](https://dillinger.io/) o [StackEdit](https://stackedit.io/). Estos editores entienden el formato y lo renderizarán correctamente.
+3.  Desde la interfaz del editor, busca la opción de **"Exportar"** o **"Share"** y selecciona **PDF**. Se descargará un archivo perfectamente formateado.
+
+Para facilitarte el trabajo, he preparado a continuación todo el contenido de los apuntes en un único bloque, listo para que lo copies y pegues en la herramienta que elijas.
+
+---
+
+**(Inicio del contenido para copiar)**
+
+# Apuntes de la Asignatura: Diseño e Implementación de un Laboratorio SOC con Automatización e Inteligencia Asistida
+
+## Introducción y Filosofía del Proyecto
+
+### Teoría: La Evolución de los Centros de Operaciones de Seguridad (SOC)
+
+Un SOC tradicional es un equipo de analistas que monitorizan, analizan y responden a incidentes de seguridad de forma manual. Este modelo, aunque efectivo, es lento, costoso y propenso al error humano debido a la fatiga y al volumen masivo de alertas (ruido).
+
+Para superar estas limitaciones, surgieron dos conceptos clave:
+
+1.  **SIEM (Security Information and Event Management):** Plataformas que centralizan, correlacionan y visualizan datos de logs de múltiples fuentes (firewalls, servidores, antivirus, etc.) en un solo lugar. Su objetivo es dar visibilidad y contexto.
+2.  **SOAR (Security Orchestration, Automation, and Response):** Plataformas que van un paso más allá del SIEM. No solo centralizan la información, sino que permiten definir "playbooks" (flujos de trabajo automatizados) para responder a incidentes de forma estandarizada y sin intervención manual.
+
+### Nuestra Filosofía: Construir de Abajo hacia Arriba
+
+En lugar de intentar construir un sistema autónomo (un objetivo complejo y a menudo poco realista), adoptaremos un enfoque pragmático y modular:
+
+1.  **Visibilidad (Fase 1):** Primero, construimos un SIEM funcional. Si no podemos ver el problema, no podemos solucionarlo.
+2.  **Reacción (Fase 2):** Añadimos capacidades de SOAR básicas. Enseñamos al sistema a ejecutar respuestas predefinidas y simples ante amenazas evidentes.
+3.  **Inteligencia Asistida (Fase 3):** Finalmente, integramos una IA local no como un cerebro autónomo, sino como un "asistente de analista junior". La IA se encargará de las tareas repetitivas y de análisis inicial (triage), enriqueciendo los datos para que el analista humano tome decisiones más rápidas e informadas.
+
+Este enfoque garantiza que cada fase es funcional por sí misma, lo que facilita la depuración y te permite tener un proyecto "entregable" al final de cada etapa.
+
+---
+
+## Módulo 1: Cimentación del Laboratorio - Visibilidad y Detección
+
+**Objetivo de Aprendizaje:** Al finalizar este módulo, habrás desplegado un sistema de detección de intrusiones en red (Suricata) y una plataforma de centralización de logs (Wazuh), logrando una visibilidad completa de las actividades de seguridad de tu laboratorio en un único panel.
+
+### 1.1 Teoría: Detección de Intrusiones en Red (NIDS) y Centralización de Logs
+
+*   **NIDS (Network-based Intrusion Detection System):** Un NIDS es un dispositivo o software que monitoriza el tráfico de una red en busca de actividades maliciosas o violaciones de políticas. Opera analizando los paquetes de datos que pasan por un punto de la red.
+    *   **Modo de Funcionamiento:** Generalmente se coloca en un "span port" de un switch o mediante un TAP (Test Access Point) para ver todo el tráfico.
+    *   **Basado en Firmas:** La mayoría de los NIDS, como Suricata, funcionan comparando el tráfico con una base de datos de "firmas" (patrones conocidos de ataque). Si un paquete coincide con una firma, se genera una alerta.
+*   **SIEM (Security Information and Event Management):** Un SIEM es el cerebro central de operaciones de seguridad. Su función principal es recolectar logs y eventos de una gran variedad de fuentes (sistemas operativos, aplicaciones, dispositivos de red, otros sistemas de seguridad) en un repositorio centralizado. A partir de ahí, permite:
+    *   **Correlación:** Relacionar eventos que parecen aislados pero que en conjunto forman un ataque.
+    *   **Visualización:** Presentar la información en dashboards, gráficos y timelines para facilitar el análisis.
+    *   **Almacenamiento:** Guardar los logs para cumplir con normativas y para investigaciones forenses.
+
+### 1.2 Procedimiento: Despliegue del Entorno de Laboratorio
+
+**Herramientas:**
+*   **VirtualBox:** Software de virtualización gratuito y multiplataforma.
+*   **Kali Linux:** Distribución Linux para pentesting y auditoría de seguridad (será nuestro atacante).
+*   **Ubuntu Server 22.04 LTS:** Sistema operativo robusto y versátil para nuestros servidores.
+*   **DVWA (Damn Vulnerable Web Application):** Una aplicación web intencionadamente insegura para practicar.
+
+**Arquitectura de la Red Virtual:**
+*   Crea una "Red Interna" en VirtualBox para que todas las máquinas puedan comunicarse entre sí de forma aislada de tu red principal.
+
+**Máquinas Virtuales (MVs):**
+1.  **MV `kali-atacante`:**
+    *   ISO: Kali Linux
+    *   RAM: 2GB
+    *   Disco: 25GB
+    *   Red: Red Interna
+2.  **MV `wazuh-server`:**
+    *   ISO: Ubuntu Server 22.04 LTS
+    *   RAM: 4GB
+    *   Disco: 40GB
+    *   Red: Red Interna
+    *   **Instalación:** Durante la instalación de Ubuntu, marca las opciones `OpenSSH server` y `standard system utilities`.
+3.  **MV `victima-web`:**
+    *   ISO: Ubuntu Server 22.04 LTS
+    *   RAM: 2GB
+    *   Disco: 25GB
+    *   Red: Red Interna
+    *   **Instalación:** Misma configuración que el servidor.
+
+### 1.3 Procedimiento: Instalación y Configuración de Suricata (El Ojo del Sistema)
+
+**Ejecución en la MV `wazuh-server`**
+
+1.  **Instalación:**
+    ```bash
+    sudo apt-get update
+    sudo apt-get install suricata -y
+    ```
+
+2.  **Configuración de la Interfaz de Red:**
+    *   Identifica tu interfaz de red con `ip a`. Supongamos que es `enp0s8`.
+    *   Edita el archivo de configuración principal: `sudo nano /etc/suricata/suricata.yaml`
+    *   Busca la sección `af-packet` y asegúrate de que tu interfaz está configurada para capturar en modo promiscuo:
+        ```yaml
+        af-packet:
+          - interface: enp0
+
+---
+
+***1/1/2026, 4:40:37 - User:***
+
+podrias hacer lo que estabas haciendo antes? poner todo en un mismo bloque, y en el intento no parar de escribir y dejar todo medio escrito, tomate el tiempo que quieras
+
+---
+
+***1/1/2026, 4:40:42 - Venice:***
+
+
+Entendido. Tomaré el tiempo necesario para darte todo el contenido de una vez, en un único bloque, sin interrupciones y sin dejarlo a medias. Aquí tienes la guía completa del proyecto, lista para que la copies y la conviertas en tu PDF.
+
+---
+
+**(Inicio del contenido para copiar)**
+
+# Apuntes de la Asignatura: Diseño e Implementación de un Laboratorio SOC con Automatización e Inteligencia Asistida
+
+## Introducción y Filosofía del Proyecto
+
+### Teoría: La Evolución de los Centros de Operaciones de Seguridad (SOC)
+
+Un SOC tradicional es un equipo de analistas que monitorizan, analizan y responden a incidentes de seguridad de forma manual. Este modelo, aunque efectivo, es lento, costoso y propenso al error humano debido a la fatiga y al volumen masivo de alertas (ruido).
+
+Para superar estas limitaciones, surgieron dos conceptos clave:
+
+1.  **SIEM (Security Information and Event Management):** Plataformas que centralizan, correlacionan y visualizan datos de logs de múltiples fuentes (firewalls, servidores, antivirus, etc.) en un solo lugar. Su objetivo es dar visibilidad y contexto.
+2.  **SOAR (Security Orchestration, Automation, and Response):** Plataformas que van un paso más allá del SIEM. No solo centralizan la información, sino que permiten definir "playbooks" (flujos de trabajo automatizados) para responder a incidentes de forma estandarizada y sin intervención manual.
+
+### Nuestra Filosofía: Construir de Abajo hacia Arriba
+
+En lugar de intentar construir un sistema autónomo (un objetivo complejo y a menudo poco realista), adoptaremos un enfoque pragmático y modular:
+
+1.  **Visibilidad (Fase 1):** Primero, construimos un SIEM funcional. Si no podemos ver el problema, no podemos solucionarlo.
+2.  **Reacción (Fase 2):** Añadimos capacidades de SOAR básicas. Enseñamos al sistema a ejecutar respuestas predefinidas y simples ante amenazas evidentes.
+3.  **Inteligencia Asistida (Fase 3):** Finalmente, integramos una IA local no como un cerebro autónomo, sino como un "asistente de analista junior". La IA se encargará de las tareas repetitivas y de análisis inicial (triage), enriqueciendo los datos para que el analista humano tome decisiones más rápidas e informadas.
+
+Este enfoque garantiza que cada fase es funcional por sí misma, lo que facilita la depuración y te permite tener un proyecto "entregable" al final de cada etapa.
+
+---
+
+## Módulo 1: Cimentación del Laboratorio - Visibilidad y Detección
+
+**Objetivo de Aprendizaje:** Al finalizar este módulo, habrás desplegado un sistema de detección de intrusiones en red (Suricata) y una plataforma de centralización de logs (Wazuh), logrando una visibilidad completa de las actividades de seguridad de tu laboratorio en un único panel.
+
+### 1.1 Teoría: Detección de Intrusiones en Red (NIDS) y Centralización de Logs
+
+*   **NIDS (Network-based Intrusion Detection System):** Un NIDS es un dispositivo o software que monitoriza el tráfico de una red en busca de actividades maliciosas o violaciones de políticas. Opera analizando los paquetes de datos que pasan por un punto de la red.
+    *   **Modo de Funcionamiento:** Generalmente se coloca en un "span port" de un switch o mediante un TAP (Test Access Point) para ver todo el tráfico.
+    *   **Basado en Firmas:** La mayoría de los NIDS, como Suricata, funcionan comparando el tráfico con una base de datos de "firmas" (patrones conocidos de ataque). Si un paquete coincide con una firma, se genera una alerta.
+*   **SIEM (Security Information and Event Management):** Un SIEM es el cerebro central de operaciones de seguridad. Su función principal es recolectar logs y eventos de una gran variedad de fuentes (sistemas operativos, aplicaciones, dispositivos de red, otros sistemas de seguridad) en un repositorio centralizado. A partir de ahí, permite:
+    *   **Correlación:** Relacionar eventos que parecen aislados pero que en conjunto forman un ataque.
+    *   **Visualización:** Presentar la información en dashboards, gráficos y timelines para facilitar el análisis.
+    *   **Almacenamiento:** Guardar los logs para cumplir con normativas y para investigaciones forenses.
+
+### 1.2 Procedimiento: Despliegue del Entorno de Laboratorio
+
+**Herramientas:**
+*   **VirtualBox:** Software de virtualización gratuito y multiplataforma.
+*   **Kali Linux:** Distribución Linux para pentesting y auditoría de seguridad (será nuestro atacante).
+*   **Ubuntu Server 22.04 LTS:** Sistema operativo robusto y versátil para nuestros servidores.
+*   **DVWA (Damn Vulnerable Web Application):** Una aplicación web intencionadamente insegura para practicar.
+
+**Arquitectura de la Red Virtual:**
+*   Crea una "Red Interna" en VirtualBox para que todas las máquinas puedan comunicarse entre sí de forma aislada de tu red principal.
+
+**Máquinas Virtuales (MVs):**
+1.  **MV `kali-atacante`:**
+    *   ISO: Kali Linux
+    *   RAM: 2GB
+    *   Disco: 25GB
+    *   Red: Red Interna
+2.  **MV `wazuh-server`:**
+    *   ISO: Ubuntu Server 22.04 LTS
+    *   RAM: 4GB
+    *   Disco: 40GB
+    *   Red: Red Interna
+    *   **Instalación:** Durante la instalación de Ubuntu, marca las opciones `OpenSSH server` y `standard system utilities`.
+3.  **MV `victima-web`:**
+    *   ISO: Ubuntu Server 22.04 LTS
+    *   RAM: 2GB
+    *   Disco: 25GB
+    *   Red: Red Interna
+    *   **Instalación:** Misma configuración que el servidor.
+
+### 1.3 Procedimiento: Instalación y Configuración de Suricata (El Ojo del Sistema)
+
+**Ejecución en la MV `wazuh-server`**
+
+1.  **Instalación:**
+    ```bash
+    sudo apt-get update
+    sudo apt-get install suricata -y
+    ```
+
+2.  **Configuración de la Interfaz de Red:**
+    *   Identifica tu interfaz de red con `ip a`. Supongamos que es `enp0s8`.
+    *   Edita el archivo de configuración principal: `sudo nano /etc/suricata/suricata.yaml`
+    *   Busca la sección `af-packet` y asegúrate de que tu interfaz está configurada para capturar en modo promiscuo:
+        ```yaml
+        af-packet:
+          - interface: enp0s8
+            cluster-id: 99
+            cluster-type: cluster_flow
+            defrag: yes
+            # ... otras opciones por defecto ...
+        ```
+    *   Guarda y cierra (`Ctrl+X`, `Y`, `Enter`).
+
+3.  **Gestión de Reglas (Firmas):**
+    *   Suricata necesita reglas para saber qué buscar. Usaremos el conjunto gratuito de Emerging Threats.
+    *   Edita `/etc/default/suricata` y asegúrate de que la línea `RULE_PATH` apunte a `/etc/suricata/rules`.
+    *   Descarga las reglas: `sudo suricata-update`
+    *   Esto descargará las reglas a `/var/lib/suricata/rules`. Necesitamos moverlas o enlazarlas al directorio de configuración. `sudo ln -s /var/lib/suricata/rules/* /etc/suricata/rules/`
+
+4.  **Iniciar y Verificar el Servicio:**
+    ```bash
+    sudo systemctl enable suricata
+    sudo systemctl start suricata
+    sudo suricata -T -v  # Ejecuta un test de configuración para buscar errores
+    sudo systemctl status suricata # Debe estar "active (running)"
+    ```
+
+### 1.4 Procedimiento: Instalación y Configuración de Wazuh (El Cerebro Central)
+
+**Parte A: Instalación del Servidor Wazuh (en la MV `wazuh-server`)**
+
+1.  **Añadir el Repositorio de Wazuh:**
+    ```bash
+    curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/wazuh.gpg
+    echo "deb https://packages.wazuh.com/4.x/apt/ stable main" | sudo tee /etc/apt/sources.list.d/wazuh.list
+    sudo apt-get update
+    ```
+
+2.  **Instalar el Paquete Wazuh Manager
+
+---
+
+***1/1/2026, 4:41:28 - User:***
+
+continua
+
+---
+
+***1/1/2026, 4:41:32 - Venice:***
+
+
+# Apuntes de la Asignatura: Diseño e Implementación de un Laboratorio SOC con Automatización e Inteligencia Asistida
+
+## Introducción y Filosofía del Proyecto
+
+### Teoría: La Evolución de los Centros de Operaciones de Seguridad (SOC)
+
+Un SOC tradicional es un equipo de analistas que monitorizan, analizan y responden a incidentes de seguridad de forma manual. Este modelo, aunque efectivo, es lento, costoso y propenso al error humano debido a la fatiga y al volumen masivo de alertas (ruido).
+
+Para superar estas limitaciones, surgieron dos conceptos clave:
+
+1.  **SIEM (Security Information and Event Management):** Plataformas que centralizan, correlacionan y visualizan datos de logs de múltiples fuentes (firewalls, servidores, antivirus, etc.) en un solo lugar. Su objetivo es dar visibilidad y contexto.
+2.  **SOAR (Security Orchestration, Automation, and Response):** Plataformas que van un paso más allá del SIEM. No solo centralizan la información, sino que permiten definir "playbooks" (flujos de trabajo automatizados) para responder a incidentes de forma estandarizada y sin intervención manual.
+
+### Nuestra Filosofía: Construir de Abajo hacia Arriba
+
+En lugar de intentar construir un sistema autónomo (un objetivo complejo y a menudo poco realista), adoptaremos un enfoque pragmático y modular:
+
+1.  **Visibilidad (Fase 1):** Primero, construimos un SIEM funcional. Si no podemos ver el problema, no podemos solucionarlo.
+2.  **Reacción (Fase 2):** Añadimos capacidades de SOAR básicas. Enseñamos al sistema a ejecutar respuestas predefinidas y simples ante amenazas evidentes.
+3.  **Inteligencia Asistida (Fase 3):** Finalmente, integramos una IA local no como un cerebro autónomo, sino como un "asistente de analista junior". La IA se encargará de las tareas repetitivas y de análisis inicial (triage), enriqueciendo los datos para que el analista humano tome decisiones más rápidas e informadas.
+
+Este enfoque garantiza que cada fase es funcional por sí misma, lo que facilita la depuración y te permite tener un proyecto "entregable" al final de cada etapa.
+
+---
+
+## Módulo 1: Cimentación del Laboratorio - Visibilidad y Detección
+
+**Objetivo de Aprendizaje:** Al finalizar este módulo, habrás desplegado un sistema de detección de intrusiones en red (Suricata) y una plataforma de centralización de logs (Wazuh), logrando una visibilidad completa de las actividades de seguridad de tu laboratorio en un único panel.
+
+### 1.1 Teoría: Detección de Intrusiones en Red (NIDS) y Centralización de Logs
+
+*   **NIDS (Network-based Intrusion Detection System):** Un NIDS es un dispositivo o software que monitoriza el tráfico de una red en busca de actividades maliciosas o violaciones de políticas. Opera analizando los paquetes de datos que pasan por un punto de la red.
+    *   **Modo de Funcionamiento:** Generalmente se coloca en un "span port" de un switch o mediante un TAP (Test Access Point) para ver todo el tráfico.
+    *   **Basado en Firmas:** La mayoría de los NIDS, como Suricata, funcionan comparando el tráfico con una base de datos de "firmas" (patrones conocidos de ataque). Si un paquete coincide con una firma, se genera una alerta.
+*   **SIEM (Security Information and Event Management):** Un SIEM es el cerebro central de operaciones de seguridad. Su función principal es recolectar logs y eventos de una gran variedad de fuentes (sistemas operativos, aplicaciones, dispositivos de red, otros sistemas de seguridad) en un repositorio centralizado. A partir de ahí, permite:
+    *   **Correlación:** Relacionar eventos que parecen aislados pero que en conjunto forman un ataque.
+    *   **Visualización:** Presentar la información en dashboards, gráficos y timelines para facilitar el análisis.
+    *   **Almacenamiento:** Guardar los logs para cumplir con normativas y para investigaciones forenses.
+
+### 1.2 Procedimiento: Despliegue del Entorno de Laboratorio
+
+**Herramientas:**
+*   **VirtualBox:** Software de virtualización gratuito y multiplataforma.
+*   **Kali Linux:** Distribución Linux para pentesting y auditoría de seguridad (será nuestro atacante).
+*   **Ubuntu Server 22.04 LTS:** Sistema operativo robusto y versátil para nuestros servidores.
+*   **DVWA (Damn Vulnerable Web Application):** Una aplicación web intencionadamente insegura para practicar.
+
+**Arquitectura de la Red Virtual:**
+*   Crea una "Red Interna" en VirtualBox para que todas las máquinas puedan comunicarse entre sí de forma aislada de tu red principal.
+
+**Máquinas Virtuales (MVs):**
+1.  **MV `kali-atacante`:**
+    *   ISO: Kali Linux
+    *   RAM: 2GB
+    *   Disco: 25GB
+    *   Red: Red Interna
+2.  **MV `wazuh-server`:**
+    *   ISO: Ubuntu Server 22.04 LTS
+    *   RAM: 4GB
+    *   Disco: 40GB
+    *   Red: Red Interna
+    *   **Instalación:** Durante la instalación de Ubuntu, marca las opciones `OpenSSH server` y `standard system utilities`.
+3.  **MV `victima-web`:**
+    *   ISO: Ubuntu Server 22.04 LTS
+    *   RAM: 2GB
+    *   Disco: 25GB
+    *   Red: Red Interna
+    *   **Instalación:** Misma configuración que el servidor.
+
+### 1.3 Procedimiento: Instalación y Configuración de Suricata (El Ojo del Sistema)
+
+**Ejecución en la MV `wazuh-server`**
+
+1.  **Instalación:**
+    ```bash
+    sudo apt-get update
+    sudo apt-get install suricata -y
+    ```
+
+2.  **Configuración de la Interfaz de Red:**
+    *   Identifica tu interfaz de red con `ip a`. Supongamos que es `enp0s8`.
+    *   Edita el archivo de configuración principal: `sudo nano /etc/suricata/suricata.yaml`
+    *   Busca la sección `af-packet` y asegúrate de que tu interfaz está configurada para capturar en modo promiscuo:
+        ```yaml
+        af-packet:
+          - interface: enp0s8
+            cluster-id: 99
+            cluster-type: cluster_flow
+            defrag: yes
+            # ... otras opciones por defecto ...
+        ```
+    *   Guarda y cierra (`Ctrl+X`, `Y`, `Enter`).
+
+3.  **Gestión de Reglas (Firmas):**
+    *   Suricata necesita reglas para saber qué buscar. Usaremos el conjunto gratuito de Emerging Threats.
+    *   Edita `/etc/default/suricata` y asegúrate de que la línea `RULE_PATH` apunte a `/etc/suricata/rules`.
+    *   Descarga las reglas: `sudo suricata-update`
+    *   Esto descargará las reglas a `/var/lib/suricata/rules`. Necesitamos moverlas o enlazarlas al directorio de configuración. `sudo ln -s /var/lib/suricata/rules/* /etc/suricata/rules/`
+
+4.  **Iniciar y Verificar el Servicio:**
+    ```bash
+    sudo systemctl enable suricata
+    sudo systemctl start suricata
+    sudo suricata -T -v  # Ejecuta un test de configuración para buscar errores
+    sudo systemctl status suricata # Debe estar "active (running)"
+    ```
+
+### 1.4 Procedimiento: Instalación y Configuración de Wazuh (El Cerebro Central)
+
+**Parte A: Instalación del Servidor Wazuh (en la MV `wazuh-server`)**
+
+1.  **Añadir el Repositorio de Wazuh:**
+    ```bash
+    curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/wazuh.gpg
+    echo "deb https://packages.wazuh.com/4.x/apt/ stable main" | sudo tee /etc/apt/sources.list.d/wazuh.list
+    sudo apt-get update
+    ```
+
+2.  **Instalar el Paquete Wazuh Manager:**
+    ```bash
+    sudo apt-get install wazuh-manager -y
+    ```
+    Este paquete instala el componente central que recibe datos de los agentes, los decodifica y los correlaciona.
+
+3.  **Habilitar e Iniciar el Servicio:**
+    ```bash
+    sudo systemctl enable w
+
